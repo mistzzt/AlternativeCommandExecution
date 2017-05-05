@@ -47,8 +47,7 @@ namespace AlternativeCommandExecution.ShortCommand
 				}
 				case ArgumentKind.PlayerName:
 				{
-					return "Íæ¼ÒÃû£¨Õæ£©";
-					//return context.Player.Name;
+					return context?.Player?.Name ?? "None";
 				}
 				default:
 					throw new ArgumentOutOfRangeException(nameof(Kind));
