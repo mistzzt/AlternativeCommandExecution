@@ -8,14 +8,9 @@ namespace AlternativeCommandExecution.ShortCommand
 {
 	public sealed class ShortCommand
 	{
-		public static ShortCommand Create(string alias, string[] commandLines)
+		public static ShortCommand Create(string desc, string[] commandLines, params string[] names)
 		{
-			/*
-			 * command alias: `test {arg-swap-2} {normal-arg} {arg-swap-1} {%opt} {...}`
-			 * command lines: { "real-test {normal-arg}", "real-test-swap {arg-swap-2} {arg-swap-1}", "test-opt {normal-arg} {%opt} {...}" }
-			*/
-
-			var sc = new ShortCommand(alias, commandLines);
+			var sc = new ShortCommand(desc, commandLines, names);
 
 			sc.InitializeArguments();
 			sc.InitializeCommandLines();
@@ -23,11 +18,15 @@ namespace AlternativeCommandExecution.ShortCommand
 			return sc;
 		}
 
-		private ShortCommand(string alias, string[] lines)
+		private ShortCommand(string desc, string[] lines, string[] names)
 		{
-			_aliasText = alias;
+			_argumentDescription = desc;
 			_commandLines = (string[])lines.Clone();
+
+			Names = (string[])names.Clone();
 		}
+
+		public string[] Names { get; }
 
 		public Argument[] Arguments { get; private set; }
 
@@ -39,7 +38,7 @@ namespace AlternativeCommandExecution.ShortCommand
 		{
 			if (args.Length < _fewestArgCount)
 			{
-				throw new CommandArgumentException("");
+				throw new CommandArgumentException("缺少参数！");
 			}
 
 			var values = new string[Arguments.Length];
@@ -51,6 +50,8 @@ namespace AlternativeCommandExecution.ShortCommand
 			return FormatLines.Select(x => string.Format(x, values/*.Select(v => (object)v).ToArray()*/)).ToArray();
 		}
 
+		public bool HasName(string name) => Names.Any(x => x.Equals(name, StringComparison.Ordinal));
+
 		private void InitializeArguments()
 		{
 			var args = new List<Argument>();
@@ -59,37 +60,37 @@ namespace AlternativeCommandExecution.ShortCommand
 
 			var argName = new StringBuilder();
 			var defaultValue = new StringBuilder();
-			var kind = ArgumentKind.Required;
+			var kind = ArgumentType.Required;
 
 			void InternalReset()
 			{
 				state = ParseState.Normal;
 				argName.Clear();
 				defaultValue.Clear();
-				kind = ArgumentKind.Required;
+				kind = ArgumentType.Required;
 			}
 
-			for (var index = 0; index < _aliasText.Length; index++)
+			for (var index = 0; index < _argumentDescription.Length; index++)
 			{
-				var c = _aliasText[index];
+				var c = _argumentDescription[index];
 
 				switch (c)
 				{
 					case LeftBracket:
 						if (state != ParseState.Normal)
 						{
-							throw new CommandParseException($"invalid {c} here", _aliasText, index);
+							throw new CommandParseException($"invalid {c} here", _argumentDescription, index);
 						}
 						state = ParseState.InsideBracket;
 						continue;
 					case RightBracket:
 						if (state != ParseState.InsideBracket)
 						{
-							throw new CommandParseException($"invalid {c} here", _aliasText, index);
+							throw new CommandParseException($"invalid {c} here", _argumentDescription, index);
 						}
 						if (argName.Length == 0)
 						{
-							throw new CommandParseException("Argument must have a name", _aliasText, index);
+							throw new CommandParseException("Argument must have a name", _argumentDescription, index);
 						}
 						args.Add(new Argument(kind, argName.ToString(), defaultValue.ToString()));
 						InternalReset();
@@ -112,16 +113,16 @@ namespace AlternativeCommandExecution.ShortCommand
 							switch (c)
 							{
 								case DefaultValueRepresentation:
-									while ((c = _aliasText[++index]) != RightBracket)
+									while ((c = _argumentDescription[++index]) != RightBracket)
 									{
 										defaultValue.Append(c);
 									}
 									index--;
-									kind = ArgumentKind.DefaultValue;
+									kind = ArgumentType.DefaultValue;
 									continue;
 								case SpecialValueRepresentation: // special value
 									var special = new StringBuilder();
-									while ((c = _aliasText[++index]) != RightBracket)
+									while ((c = _argumentDescription[++index]) != RightBracket)
 									{
 										special.Append(c);
 									}
@@ -130,19 +131,19 @@ namespace AlternativeCommandExecution.ShortCommand
 									switch (special.ToString().Trim())
 									{
 										case "Player":
-											kind = ArgumentKind.PlayerName;
+											kind = ArgumentType.PlayerName;
 											continue;
 									}
 									continue;
 								case OptionalRepresentation: // optional
 									if (argName.Length != 0)
 									{
-										throw new CommandParseException("Wrong position for " + OptionalRepresentation, _aliasText, index);
+										throw new CommandParseException("Wrong position for " + OptionalRepresentation, _argumentDescription, index);
 									}
-									kind = ArgumentKind.NotRequired;
+									kind = ArgumentType.NotRequired;
 									continue;
 								default:
-									throw new CommandParseException("Invalid character " + c, _aliasText, index);
+									throw new CommandParseException("Invalid character " + c, _argumentDescription, index);
 							}
 						}
 						break;
@@ -157,7 +158,7 @@ namespace AlternativeCommandExecution.ShortCommand
 			}
 
 			Arguments = args.ToArray();
-			_fewestArgCount = (byte)Arguments.Count(x => x.Kind == ArgumentKind.Required);
+			_fewestArgCount = (byte)Arguments.Count(x => x.Type == ArgumentType.Required);
 		}
 
 		private void InitializeCommandLines()
@@ -225,7 +226,7 @@ namespace AlternativeCommandExecution.ShortCommand
 			FormatLines = lines.ToArray();
 		}
 
-		private readonly string _aliasText;
+		private readonly string _argumentDescription;
 
 		private readonly string[] _commandLines;
 

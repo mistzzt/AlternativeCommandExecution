@@ -1,6 +1,6 @@
 namespace AlternativeCommandExecution.ShortCommand
 {
-	public enum ArgumentKind : byte
+	public enum ArgumentType : byte
 	{
 		DefaultValue = 0,
 		NotRequired,

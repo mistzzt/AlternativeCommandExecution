@@ -6,14 +6,14 @@ namespace AlternativeCommandExecution.ShortCommand
 	[StructLayout(LayoutKind.Auto)]
 	public struct Argument
 	{
-		public Argument(ArgumentKind kind, string argumentName, string defaultValue)
+		public Argument(ArgumentType type, string argumentName, string defaultValue)
 		{
-			Kind = kind;
+			Type = type;
 			DefaultValue = defaultValue;
 			Name = argumentName;
 		}
 
-		public ArgumentKind Kind { get; }
+		public ArgumentType Type { get; }
 
 		public string DefaultValue { get; }
 
@@ -21,36 +21,36 @@ namespace AlternativeCommandExecution.ShortCommand
 
 		public override string ToString()
 		{
-			return string.Format("Name: {0}, Kind: {1}, Default: {2}",
+			return string.Format("Name: {0}, Type: {1}, Default: {2}",
 										Name,
-												Kind,
+												Type,
 									string.IsNullOrWhiteSpace(DefaultValue) ? "null" : DefaultValue);
 		}
 
 		public string ToString(CommandExectionContext context, string value = null)
 		{
-			switch (Kind)
+			switch (Type)
 			{
-				case ArgumentKind.DefaultValue:
-				case ArgumentKind.NotRequired:
-				{
-					return (value ?? DefaultValue) ?? string.Empty;
-				}
-				case ArgumentKind.Required:
-				{
-					if (string.IsNullOrWhiteSpace(value))
+				case ArgumentType.DefaultValue:
+				case ArgumentType.NotRequired:
 					{
-						throw new ArgumentNullException(nameof(value));
+						return (value ?? DefaultValue) ?? string.Empty;
 					}
+				case ArgumentType.Required:
+					{
+						if (string.IsNullOrWhiteSpace(value))
+						{
+							throw new ArgumentNullException(nameof(value));
+						}
 
-					return value;
-				}
-				case ArgumentKind.PlayerName:
-				{
-					return context?.Player?.Name ?? "None";
-				}
+						return value;
+					}
+				case ArgumentType.PlayerName:
+					{
+						return context?.Player?.Name ?? "None";
+					}
 				default:
-					throw new ArgumentOutOfRangeException(nameof(Kind));
+					throw new ArgumentOutOfRangeException(nameof(Type));
 			}
 		}
 	}
