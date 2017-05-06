@@ -10,10 +10,16 @@ namespace AlternativeCommandExecution.ShortCommand
 	{
 		public static ShortCommand Create(string desc, string[] commandLines, params string[] names)
 		{
+			if (names.Length == 0)
+			{
+				throw new ArgumentException("需要至少一个参数名。", nameof(names));
+			}
+
 			var sc = new ShortCommand(desc, commandLines, names);
 
 			sc.InitializeArguments();
 			sc.InitializeCommandLines();
+			sc.InitializeHelpText();
 
 			return sc;
 		}
@@ -32,13 +38,15 @@ namespace AlternativeCommandExecution.ShortCommand
 
 		public string[] FormatLines { get; private set; }
 
+		public string ArgumentHelpText { get; private set; }
+
 		private byte _fewestArgCount;
 
 		public string[] Convert(CommandExectionContext ctx, string[] args)
 		{
 			if (args.Length < _fewestArgCount)
 			{
-				throw new CommandArgumentException("缺少参数！");
+				throw new CommandArgumentException("语法无效！正确语法：" + TShockAPI.Commands.Specifier + ArgumentHelpText);
 			}
 
 			var values = new string[Arguments.Length];
@@ -224,6 +232,21 @@ namespace AlternativeCommandExecution.ShortCommand
 			}
 
 			FormatLines = lines.ToArray();
+		}
+
+		private void InitializeHelpText()
+		{
+			var sb = new StringBuilder(Names[0]);
+
+			const string requiredFormat = " <{0}>";
+			const string notRequiredFormat = " [{0}]";
+
+			foreach (var p in Arguments)
+			{
+				sb.AppendFormat(p.Type == ArgumentType.Required ? requiredFormat : notRequiredFormat, p.Name);
+			}
+
+			ArgumentHelpText = sb.ToString();
 		}
 
 		private readonly string _argumentDescription;

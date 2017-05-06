@@ -29,7 +29,7 @@ namespace AlternativeCommandExecution.ShortCommand
 			}
 			if (index == 0) // Space after the command specifier should not be supported
 			{
-				player.SendErrorMessage("指令无效. 键入 {0}help 以获取可用指令.", Commands.Specifier);
+				player.SendErrorMessage("指令无效；键入 {0}help 以获取可用指令。", Commands.Specifier);
 				return true;
 			}
 			var cmdName = index < 0 ? cmdText.ToLower() : cmdText.Substring(0, index).ToLower();
