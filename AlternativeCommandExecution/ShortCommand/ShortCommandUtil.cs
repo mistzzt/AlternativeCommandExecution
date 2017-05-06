@@ -52,7 +52,7 @@ namespace AlternativeCommandExecution.ShortCommand
 						Commands.HandleCommand(player, cmdPrefix + c);
 					}
 				}
-				catch (CommandArgumentException ex)
+				catch (LackOfArgumentException ex)
 				{
 					player.SendErrorMessage(ex.Message);
 				}

@@ -2,7 +2,7 @@
 {
 	public sealed class ShortCommandItem
 	{
-		public string ArgumentDescription = string.Empty;
+		public string ParameterDescription = string.Empty;
 
 		public string[] CommandLines;
 

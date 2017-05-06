@@ -55,7 +55,7 @@ namespace AlternativeCommandExecution
 						},
 						new ShortCommandItem
 						{
-							ArgumentDescription = "{$Player}",
+							ParameterDescription = "{$Player}",
 							CommandLines = new []
 							{
 								"kill {Player}"

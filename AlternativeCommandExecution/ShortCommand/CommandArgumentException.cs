@@ -2,8 +2,8 @@
 
 namespace AlternativeCommandExecution.ShortCommand
 {
-	public sealed class CommandArgumentException : Exception
+	public sealed class LackOfArgumentException : Exception
 	{
-		public CommandArgumentException(string msg) : base(msg) { }
+		public LackOfArgumentException(string msg) : base(msg) { }
 	}
 }

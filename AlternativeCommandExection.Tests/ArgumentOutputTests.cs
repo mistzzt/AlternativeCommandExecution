@@ -6,17 +6,17 @@ namespace AlternativeCommandExection.Tests
 	[TestFixture]
 	public sealed class ArgumentOutputTests
 	{
-		[TestCase(ArgumentType.NotRequired)]
-		[TestCase(ArgumentType.DefaultValue)]
-		public void ArgumentOutput_DefaultValue(ArgumentType kind, string defaultValue = "default", string value = null)
+		[TestCase(ParameterType.NotRequired)]
+		[TestCase(ParameterType.DefaultValue)]
+		public void ArgumentOutput_DefaultValue(ParameterType kind, string defaultValue = "default", string value = null)
 		{
-			Assert.AreEqual(new Argument(kind, null, defaultValue).ToString(TestConfiguration.Context, value), "default");
+			Assert.AreEqual(new Parameter(kind, null, defaultValue).ToString(TestConfiguration.Context, value), "default");
 		}
 
-		[TestCase(ArgumentType.Required, null)]
-		public void ArgumentOutput_Exception(ArgumentType kind, string value = null)
+		[TestCase(ParameterType.Required, null)]
+		public void ArgumentOutput_Exception(ParameterType kind, string value = null)
 		{
-			Assert.That(() => new Argument(kind, null, null).ToString(TestConfiguration.Context, value), Throws.ArgumentNullException);
+			Assert.That(() => new Parameter(kind, null, null).ToString(TestConfiguration.Context, value), Throws.ArgumentNullException);
 		}
 
 		private static class TestConfiguration

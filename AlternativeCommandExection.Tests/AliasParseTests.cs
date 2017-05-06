@@ -1,7 +1,6 @@
 ﻿using System;
 using AlternativeCommandExecution.ShortCommand;
 using NUnit.Framework;
-using TShockAPI;
 
 namespace AlternativeCommandExection.Tests
 {
@@ -22,7 +21,7 @@ namespace AlternativeCommandExection.Tests
 
 			var sc = ShortCommand.Create(alias, lines);
 
-			foreach (var item in sc.Arguments)
+			foreach (var item in sc.Parameters)
 			{
 				Console.WriteLine(item.ToString());
 			}

@@ -17,7 +17,7 @@ namespace AlternativeCommandExecution.ShortCommand
 
 			var sc = new ShortCommand(desc, commandLines, names);
 
-			sc.InitializeArguments();
+			sc.InitializeParameters();
 			sc.InitializeCommandLines();
 			sc.InitializeHelpText();
 
@@ -26,7 +26,7 @@ namespace AlternativeCommandExecution.ShortCommand
 
 		private ShortCommand(string desc, string[] lines, string[] names)
 		{
-			_argumentDescription = desc;
+			_parameterDescription = desc;
 			_commandLines = (string[])lines.Clone();
 
 			Names = (string[])names.Clone();
@@ -34,25 +34,25 @@ namespace AlternativeCommandExecution.ShortCommand
 
 		public string[] Names { get; }
 
-		public Argument[] Arguments { get; private set; }
+		public Parameter[] Parameters { get; private set; }
 
 		public string[] FormatLines { get; private set; }
 
-		public string ArgumentHelpText { get; private set; }
+		public string ParameterHelpText { get; private set; }
 
-		private byte _fewestArgCount;
+		private byte _fewestParamCount;
 
 		public string[] Convert(CommandExectionContext ctx, string[] args)
 		{
-			if (args.Length < _fewestArgCount)
+			if (args.Length < _fewestParamCount)
 			{
-				throw new CommandArgumentException("语法无效！正确语法：" + TShockAPI.Commands.Specifier + ArgumentHelpText);
+				throw new LackOfArgumentException("语法无效！正确语法：" + TShockAPI.Commands.Specifier + ParameterHelpText);
 			}
 
-			var values = new string[Arguments.Length];
+			var values = new string[Parameters.Length];
 			for (var index = 0; index < values.Length; index++)
 			{
-				values[index] = Arguments[index].ToString(ctx, args.ElementAtOrDefault(index));
+				values[index] = Parameters[index].ToString(ctx, args.ElementAtOrDefault(index));
 			}
 
 			return FormatLines.Select(x => string.Format(x, values/*.Select(v => (object)v).ToArray()*/)).ToArray();
@@ -60,47 +60,47 @@ namespace AlternativeCommandExecution.ShortCommand
 
 		public bool HasName(string name) => Names.Any(x => x.Equals(name, StringComparison.Ordinal));
 
-		private void InitializeArguments()
+		private void InitializeParameters()
 		{
-			var args = new List<Argument>();
+			var args = new List<Parameter>();
 
 			var state = ParseState.Normal;
 
 			var argName = new StringBuilder();
 			var defaultValue = new StringBuilder();
-			var kind = ArgumentType.Required;
+			var kind = ParameterType.Required;
 
 			void InternalReset()
 			{
 				state = ParseState.Normal;
 				argName.Clear();
 				defaultValue.Clear();
-				kind = ArgumentType.Required;
+				kind = ParameterType.Required;
 			}
 
-			for (var index = 0; index < _argumentDescription.Length; index++)
+			for (var index = 0; index < _parameterDescription.Length; index++)
 			{
-				var c = _argumentDescription[index];
+				var c = _parameterDescription[index];
 
 				switch (c)
 				{
 					case LeftBracket:
 						if (state != ParseState.Normal)
 						{
-							throw new CommandParseException($"invalid {c} here", _argumentDescription, index);
+							throw new CommandParseException($"invalid {c} here", _parameterDescription, index);
 						}
 						state = ParseState.InsideBracket;
 						continue;
 					case RightBracket:
 						if (state != ParseState.InsideBracket)
 						{
-							throw new CommandParseException($"invalid {c} here", _argumentDescription, index);
+							throw new CommandParseException($"invalid {c} here", _parameterDescription, index);
 						}
 						if (argName.Length == 0)
 						{
-							throw new CommandParseException("Argument must have a name", _argumentDescription, index);
+							throw new CommandParseException("Argument must have a name", _parameterDescription, index);
 						}
-						args.Add(new Argument(kind, argName.ToString(), defaultValue.ToString()));
+						args.Add(new Parameter(kind, argName.ToString(), defaultValue.ToString()));
 						InternalReset();
 						state = ParseState.Normal;
 						continue;
@@ -121,16 +121,16 @@ namespace AlternativeCommandExecution.ShortCommand
 							switch (c)
 							{
 								case DefaultValueRepresentation:
-									while ((c = _argumentDescription[++index]) != RightBracket)
+									while ((c = _parameterDescription[++index]) != RightBracket)
 									{
 										defaultValue.Append(c);
 									}
 									index--;
-									kind = ArgumentType.DefaultValue;
+									kind = ParameterType.DefaultValue;
 									continue;
 								case SpecialValueRepresentation: // special value
 									var special = new StringBuilder();
-									while ((c = _argumentDescription[++index]) != RightBracket)
+									while ((c = _parameterDescription[++index]) != RightBracket)
 									{
 										special.Append(c);
 									}
@@ -139,19 +139,19 @@ namespace AlternativeCommandExecution.ShortCommand
 									switch (special.ToString().Trim())
 									{
 										case "Player":
-											kind = ArgumentType.PlayerName;
+											kind = ParameterType.PlayerName;
 											continue;
 									}
 									continue;
 								case OptionalRepresentation: // optional
 									if (argName.Length != 0)
 									{
-										throw new CommandParseException("Wrong position for " + OptionalRepresentation, _argumentDescription, index);
+										throw new CommandParseException("Wrong position for " + OptionalRepresentation, _parameterDescription, index);
 									}
-									kind = ArgumentType.NotRequired;
+									kind = ParameterType.NotRequired;
 									continue;
 								default:
-									throw new CommandParseException("Invalid character " + c, _argumentDescription, index);
+									throw new CommandParseException("Invalid character " + c, _parameterDescription, index);
 							}
 						}
 						break;
@@ -165,8 +165,8 @@ namespace AlternativeCommandExecution.ShortCommand
 				throw new CommandParseException("fuck you", "cnm", 0);
 			}
 
-			Arguments = args.ToArray();
-			_fewestArgCount = (byte)Arguments.Count(x => x.Type == ArgumentType.Required);
+			Parameters = args.ToArray();
+			_fewestParamCount = (byte)Parameters.Count(x => x.Type == ParameterType.Required);
 		}
 
 		private void InitializeCommandLines()
@@ -199,13 +199,13 @@ namespace AlternativeCommandExecution.ShortCommand
 							var name = argName.ToString();
 							if (name.Length == 0)
 							{
-								throw new CommandParseException("Argument must have a name");
+								throw new CommandParseException("Parameter must have a name");
 							}
 
-							var formatIndex = Array.FindIndex(Arguments, x => x.Name.Equals(name, StringComparison.Ordinal));
+							var formatIndex = Array.FindIndex(Parameters, x => x.Name.Equals(name, StringComparison.Ordinal));
 							if (formatIndex == -1)
 							{
-								throw new CommandParseException("Undeclared argument: " + name);
+								throw new CommandParseException("Undeclared parameter: " + name);
 							}
 							format.AppendFormat("{{{0}}}", formatIndex);
 
@@ -241,19 +241,19 @@ namespace AlternativeCommandExecution.ShortCommand
 			const string requiredFormat = " <{0}>";
 			const string notRequiredFormat = " [{0}]";
 
-			foreach (var p in Arguments)
+			foreach (var p in Parameters)
 			{
-				sb.AppendFormat(p.Type == ArgumentType.Required ? requiredFormat : notRequiredFormat, p.Name);
+				sb.AppendFormat(p.Type == ParameterType.Required ? requiredFormat : notRequiredFormat, p.Name);
 			}
 
-			ArgumentHelpText = sb.ToString();
+			ParameterHelpText = sb.ToString();
 		}
 
-		private readonly string _argumentDescription;
+		private readonly string _parameterDescription;
 
 		private readonly string[] _commandLines;
 
-		private static readonly Regex VanRegex = new Regex(ValidateArgumentNameRegex, RegexOptions.Compiled);
+		private static readonly Regex VanRegex = new Regex(ValidateParameterNameRegex, RegexOptions.Compiled);
 
 		private const char OptionalRepresentation = '%';
 
@@ -265,7 +265,7 @@ namespace AlternativeCommandExecution.ShortCommand
 
 		private const char SpecialValueRepresentation = '$';
 
-		private const string ValidateArgumentNameRegex = @"[\w\-]";
+		private const string ValidateParameterNameRegex = @"[\w\-]";
 
 		private enum ParseState : byte
 		{

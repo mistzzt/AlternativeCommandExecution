@@ -108,7 +108,7 @@ namespace AlternativeCommandExecution
 			{
 				try
 				{
-					list.Add(ShortCommand.ShortCommand.Create(item.ArgumentDescription, item.CommandLines, item.Names));
+					list.Add(ShortCommand.ShortCommand.Create(item.ParameterDescription, item.CommandLines, item.Names));
 				}
 				catch (CommandParseException ex)
 				{

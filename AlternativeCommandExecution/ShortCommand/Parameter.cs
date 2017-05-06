@@ -4,16 +4,16 @@ using System.Runtime.InteropServices;
 namespace AlternativeCommandExecution.ShortCommand
 {
 	[StructLayout(LayoutKind.Auto)]
-	public struct Argument
+	public struct Parameter
 	{
-		public Argument(ArgumentType type, string argumentName, string defaultValue)
+		public Parameter(ParameterType type, string name, string defaultValue)
 		{
 			Type = type;
 			DefaultValue = defaultValue;
-			Name = argumentName;
+			Name = name;
 		}
 
-		public ArgumentType Type { get; }
+		public ParameterType Type { get; }
 
 		public string DefaultValue { get; }
 
@@ -27,25 +27,25 @@ namespace AlternativeCommandExecution.ShortCommand
 									string.IsNullOrWhiteSpace(DefaultValue) ? "null" : DefaultValue);
 		}
 
-		public string ToString(CommandExectionContext context, string value = null)
+		public string ToString(CommandExectionContext context, string argument = null)
 		{
 			switch (Type)
 			{
-				case ArgumentType.DefaultValue:
-				case ArgumentType.NotRequired:
+				case ParameterType.DefaultValue:
+				case ParameterType.NotRequired:
 					{
-						return (value ?? DefaultValue) ?? string.Empty;
+						return (argument ?? DefaultValue) ?? string.Empty;
 					}
-				case ArgumentType.Required:
+				case ParameterType.Required:
 					{
-						if (string.IsNullOrWhiteSpace(value))
+						if (string.IsNullOrWhiteSpace(argument))
 						{
-							throw new ArgumentNullException(nameof(value));
+							throw new ArgumentNullException(nameof(argument));
 						}
 
-						return value;
+						return argument;
 					}
-				case ArgumentType.PlayerName:
+				case ParameterType.PlayerName:
 					{
 						return context?.Player?.Name ?? "None";
 					}
