@@ -18,7 +18,7 @@ namespace AlternativeCommandExecution
 
 		public Plugin(Main game) : base(game) { }
 
-		public Configuration Config;
+		public static Configuration Config { get; private set; }
 
 		public override void Initialize()
 		{
@@ -30,24 +30,30 @@ namespace AlternativeCommandExecution
 			}
 			ReloadConfig();
 
-			ServerApi.Hooks.ServerChat.Register(this, OnChat);
+			ServerApi.Hooks.ServerChat.Register(this, OnChat, 1000);
+			ServerApi.Hooks.ServerCommand.Register(this, OnServerCommand, 1000);
 
 			TShockAPI.Hooks.GeneralHooks.ReloadEvent += args => ReloadConfig();
 		}
 
-		private void OnChat(ServerChatEventArgs args)
+		private static void OnServerCommand(CommandEventArgs args)
 		{
-			bool IsValidCmd(string commandText)
+			if (args.Handled)
+				return;
+
+			if (string.IsNullOrWhiteSpace(args.Command))
 			{
-				return (
-							commandText.StartsWith(TShock.Config.CommandSpecifier) ||
-							commandText.StartsWith(TShock.Config.CommandSilentSpecifier) ||
-							commandText.StartsWith(Config.CommandSpecifier) ||
-							commandText.StartsWith(Config.CommandSpecifier2)
-						)
-						&& !string.IsNullOrWhiteSpace(commandText.Substring(1));
+				args.Handled = true;
+				return;
 			}
 
+			var commandText = IsValidCmd(args.Command) ? args.Command : Commands.Specifier + args.Command;
+
+			args.Handled = ShortCommandUtil.HandleCommand(TSPlayer.Server, commandText);
+		}
+
+		private static void OnChat(ServerChatEventArgs args)
+		{
 			if (args.Handled)
 				return;
 
@@ -91,24 +97,10 @@ namespace AlternativeCommandExecution
 				return;
 			}
 
-			try
-			{
-				args.Handled = true;
-				if (!ShortCommandUtil.HandleCommand(tsplr, text))
-				{
-					// This is required in case anyone makes HandleCommand return false again
-					tsplr.SendErrorMessage("无法识别指令. 请联系管理员以寻求帮助.");
-					//Log.ConsoleError("无法识别指令文本 '{0}' (玩家: {1}).", text, tsplr.Name);
-				}
-			}
-			catch (Exception ex)
-			{
-				TShock.Log.ConsoleError("执行指令时出现异常.");
-				TShock.Log.Error(ex.ToString());
-			}
+			args.Handled = ShortCommandUtil.HandleCommand(tsplr, text);
 		}
 
-		private void LoadShortCommands()
+		private static void LoadShortCommands()
 		{
 			var list = new List<ShortCommand.ShortCommand>();
 
@@ -127,6 +119,17 @@ namespace AlternativeCommandExecution
 			ShortCommands = list.ToArray();
 		}
 
-		internal static ShortCommand.ShortCommand[] ShortCommands;
+		public static ShortCommand.ShortCommand[] ShortCommands { get; private set; }
+
+		private static bool IsValidCmd(string commandText)
+		{
+			return (
+				       commandText.StartsWith(TShock.Config.CommandSpecifier) ||
+				       commandText.StartsWith(TShock.Config.CommandSilentSpecifier) ||
+				       commandText.StartsWith(Config.CommandSpecifier) ||
+				       commandText.StartsWith(Config.CommandSpecifier2)
+			       )
+			       && !string.IsNullOrWhiteSpace(commandText.Substring(1));
+		}
 	}
 }

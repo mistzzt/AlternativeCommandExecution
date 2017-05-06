@@ -29,9 +29,9 @@ namespace AlternativeCommandExecution
 						{
 							CommandLines = new []
 							{
-								"/spawnrate 0",
-								"/maxspawns 0",
-								"/butcher"
+								"spawnrate 0",
+								"maxspawns 0",
+								"butcher"
 							},
 							Names = new []
 							{
@@ -43,9 +43,9 @@ namespace AlternativeCommandExecution
 						{
 							CommandLines = new []
 							{
-								"/clear npc 999999999",
-								"/clear item 999999999",
-								"/clear proj 999999999"
+								"clear npc 999999999",
+								"clear item 999999999",
+								"clear proj 999999999"
 							},
 							Names = new []
 							{
@@ -58,7 +58,7 @@ namespace AlternativeCommandExecution
 							ArgumentDescription = "{$Player}",
 							CommandLines = new []
 							{
-								"/kill {Player}"
+								"kill {Player}"
 							},
 							Names = new []
 							{

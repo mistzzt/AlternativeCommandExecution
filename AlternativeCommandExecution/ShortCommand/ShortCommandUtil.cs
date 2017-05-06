@@ -16,6 +16,8 @@ namespace AlternativeCommandExecution.ShortCommand
 			var cmdPrefix = text[0].ToString();
 			var silent = cmdPrefix == Commands.SilentSpecifier;
 
+			cmdPrefix = silent ? Commands.SilentSpecifier : Commands.Specifier;
+
 			var index = -1;
 			for (var i = 0; i < cmdText.Length; i++)
 			{
@@ -47,7 +49,7 @@ namespace AlternativeCommandExecution.ShortCommand
 				{
 					foreach (var c in s.Convert(new CommandExectionContext(player), args.ToArray()))
 					{
-						Commands.HandleCommand(player, c);
+						Commands.HandleCommand(player, cmdPrefix + c);
 					}
 				}
 				catch (CommandArgumentException ex)
