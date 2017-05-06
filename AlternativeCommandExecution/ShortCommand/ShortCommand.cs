@@ -162,7 +162,7 @@ namespace AlternativeCommandExecution.ShortCommand
 
 			if (state != ParseState.Normal)
 			{
-				throw new CommandParseException("fuck you", "cnm", 0);
+				throw new CommandParseException("Unexpected ending", _parameterDescription, _parameterDescription.Length - 1);
 			}
 
 			Parameters = args.ToArray();

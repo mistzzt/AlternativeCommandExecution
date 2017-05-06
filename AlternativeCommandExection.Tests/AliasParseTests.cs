@@ -45,7 +45,7 @@ namespace AlternativeCommandExection.Tests
 
 		[TestCase("第一", "第二")]
 		[TestCase("第一", "第二", "你们好吗？")]
-		[TestCase("第一", "第二", "还可以吧", "煞笔！")]
+		[TestCase("第一", "第二", "还可以吧", "测试！")]
 		public void ParseTest_Convert(params string[] args)
 		{
 			var list = Sc.Convert(Ctx, args);

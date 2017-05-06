@@ -54,7 +54,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShortCommand\Parameter.cs" />
     <Compile Include="ShortCommand\ParameterType.cs" />
-    <Compile Include="ShortCommand\CommandArgumentException.cs" />
+    <Compile Include="ShortCommand\LackOfArgumentException.cs" />
     <Compile Include="ShortCommand\CommandExectionContext.cs" />
     <Compile Include="ShortCommand\CommandParseException.cs" />
     <Compile Include="ShortCommand\ShortCommand.cs" />
