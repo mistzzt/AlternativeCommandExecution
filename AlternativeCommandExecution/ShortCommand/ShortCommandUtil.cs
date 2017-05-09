@@ -142,11 +142,17 @@ namespace AlternativeCommandExecution.ShortCommand
 					call(new CommandArgs(cmdText, player, args));
 					return true;
 				}
-				player.SendErrorMessage("键入的指令无效. 使用 {0}help 查看有效指令.", Commands.Specifier);
+				player.SendErrorMessage("键入的指令无效；使用 {0}help 查看有效指令。", Commands.Specifier);
 				return true;
 			}
 			foreach (var cmd in cmds)
 			{
+				if (!cmd.Permissions.Any(Plugin.Config.SkipablePermissions.Contains))
+				{
+					player.SendErrorMessage("你没有权限执行该指令。", Commands.Specifier);
+					return true;
+				}
+
 				cmd.CommandDelegate?.Invoke(new CommandArgs(cmdText, silent, player, args));
 			}
 			return true;
