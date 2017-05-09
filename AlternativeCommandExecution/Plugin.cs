@@ -34,7 +34,23 @@ namespace AlternativeCommandExecution
 			ServerApi.Hooks.NetGetData.Register(this, OnGetData);
 			ServerApi.Hooks.GamePostInitialize.Register(this, OnPostInit, -1000);
 
+			ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
+
 			TShockAPI.Hooks.GeneralHooks.ReloadEvent += args => ReloadConfig();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				ServerApi.Hooks.ServerChat.Deregister(this, OnChat);
+				ServerApi.Hooks.ServerCommand.Deregister(this, OnServerCommand);
+				ServerApi.Hooks.NetGetData.Deregister(this, OnGetData);
+				ServerApi.Hooks.GamePostInitialize.Deregister(this, OnPostInit);
+
+				ServerApi.Hooks.GameUpdate.Deregister(this, OnUpdate);
+			}
+			base.Dispose(disposing);
 		}
 
 		private static void OnPostInit(EventArgs args)

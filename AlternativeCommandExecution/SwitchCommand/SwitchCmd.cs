@@ -31,7 +31,7 @@ namespace AlternativeCommandExecution.SwitchCommand
 			if (AllPlayerCdSecond <= 0)
 				return true;
 
-			if (_currentCd > 0 && !player.HasPermission("cry.switch.ignorecd"))
+			if (_currentCd > 0 && !player.HasPermission("ace.sc.ignorecd"))
 				return false;
 
 			_currentCd = AllPlayerCdSecond;
