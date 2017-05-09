@@ -55,16 +55,16 @@ namespace AlternativeCommandExecution.SwitchCommand
 		public void ClearNonexistents()
 		{
 			var total = 0;
-			foreach (var sc in SwitchCmds)
+			var list = (from sc in SwitchCmds
+						let tile = Main.tile[sc.X, sc.Y]
+						where tile == null ||
+											tile.type != TileID.Switches &&
+											tile.type != TileID.Lever &&
+											tile.type != TileID.PressurePlates
+						select sc).ToList();
+
+			foreach (var sc in list)
 			{
-				var tile = Main.tile[sc.X, sc.Y];
-
-				if (tile != null &&
-				    (tile.type == TileID.Switches || tile.type == TileID.Lever || tile.type == TileID.PressurePlates))
-				{
-					continue;
-				}
-
 				Del(sc.X, sc.Y);
 				total++;
 			}
