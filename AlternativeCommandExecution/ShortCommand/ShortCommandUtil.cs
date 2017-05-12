@@ -147,7 +147,7 @@ namespace AlternativeCommandExecution.ShortCommand
 			}
 			foreach (var cmd in cmds)
 			{
-				if (cmd.CanRun(player) || !cmd.Permissions.Any(Plugin.Config.SkipablePermissions.Contains))
+				if (cmd.CanRun(player) || cmd.Permissions.Any(Plugin.Config.SkipablePermissions.Contains))
 				{
 					cmd.CommandDelegate?.Invoke(new CommandArgs(cmdText, silent, player, args));
 				}
