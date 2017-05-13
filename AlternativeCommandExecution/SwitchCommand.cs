@@ -72,7 +72,10 @@ namespace AlternativeCommandExecution
 				try
 				{
 					if (!sc.IgnorePermission)
-						ShortCommand.ShortCommandUtil.HandleCommand(player, sc.Command);
+					{
+						if (!ShortCommand.ShortCommandUtil.HandleCommand(player, sc.Command))
+							Commands.HandleCommand(player, sc.Command);
+					}
 					else
 						ShortCommand.ShortCommandUtil.HandleCommandIgnorePermission(player, sc.Command);
 				}
