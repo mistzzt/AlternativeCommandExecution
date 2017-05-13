@@ -21,7 +21,9 @@ namespace AlternativeCommandExecution
 
 			var commandText = IsValidCmd(args.Command) ? args.Command : Commands.Specifier + args.Command;
 
-			args.Handled = ShortCommandUtil.HandleCommand(TSPlayer.Server, commandText);
+			ShortCommandUtil.HandleCommand(TSPlayer.Server, commandText);
+
+			args.Handled = true;
 		}
 
 		private static void OnChat(ServerChatEventArgs args)
@@ -69,7 +71,9 @@ namespace AlternativeCommandExecution
 				return;
 			}
 
-			args.Handled = ShortCommandUtil.HandleCommand(tsplr, text);
+			ShortCommandUtil.HandleCommand(tsplr, text);
+
+			args.Handled = true;
 		}
 
 		private static void LoadShortCommands()

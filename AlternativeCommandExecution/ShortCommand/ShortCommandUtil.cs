@@ -10,55 +10,67 @@ namespace AlternativeCommandExecution.ShortCommand
 	{
 		private static readonly Type CommandsType = typeof(Commands);
 
-		public static bool HandleCommand(TSPlayer player, string text)
+		public static void HandleCommand(TSPlayer player, string text)
 		{
-			var cmdText = text.Remove(0, 1);
-			var cmdPrefix = text[0].ToString();
-			var silent = cmdPrefix == Commands.SilentSpecifier;
-
-			cmdPrefix = silent ? Commands.SilentSpecifier : Commands.Specifier;
-
-			var index = -1;
-			for (var i = 0; i < cmdText.Length; i++)
-			{
-				if (CommandsType.CallPrivateStaticMethod<bool>("IsWhiteSpace", cmdText[i]))
-				{
-					index = i;
-					break;
-				}
-			}
-			if (index == 0) // Space after the command specifier should not be supported
+			if (!Internal_ParseCmd(text, out var cmdText, out var cmdName, out var args, out var silent))
 			{
 				player.SendErrorMessage("指令无效；键入 {0}help 以获取可用指令。", Commands.Specifier);
-				return true;
+				return;
 			}
-			var cmdName = index < 0 ? cmdText.ToLower() : cmdText.Substring(0, index).ToLower();
-
-			var args = index < 0 ?
-				new List<string>() :
-				CommandsType.CallPrivateStaticMethod<List<string>>("ParseParameters", cmdText.Substring(index));
 
 			var sc = Plugin.ShortCommands.Where(x => x.HasName(cmdName)).ToList();
 
-			if (!sc.Any())
-				return false;
-
-			foreach (var s in sc)
+			if (sc.Count != 0)
 			{
-				try
+				var cmdPrefix = silent ? Commands.SilentSpecifier : Commands.Specifier;
+
+				foreach (var s in sc)
 				{
-					foreach (var c in s.Convert(new CommandExectionContext(player), args.ToArray()))
+					try
 					{
-						Commands.HandleCommand(player, cmdPrefix + c);
+						foreach (var c in s.Convert(new CommandExectionContext(player), args.ToArray()))
+						{
+							Commands.HandleCommand(player, cmdPrefix + c);
+						}
+					}
+					catch (LackOfArgumentException ex)
+					{
+						player.SendErrorMessage(ex.Message);
 					}
 				}
-				catch (LackOfArgumentException ex)
+			}
+			else
+			{
+				var cmds = Commands.ChatCommands.FindAll(x => x.HasAlias(cmdName));
+
+				if (cmds.Count == 0)
 				{
-					player.SendErrorMessage(ex.Message);
+					if (player.AwaitingResponse.ContainsKey(cmdName))
+					{
+						Action<CommandArgs> call = player.AwaitingResponse[cmdName];
+						player.AwaitingResponse.Remove(cmdName);
+						call(new CommandArgs(cmdText, player, args));
+						return;
+					}
+					player.SendErrorMessage("键入的指令无效；使用 {0}help 查看有效指令。", Commands.Specifier);
+					return;
+				}
+				foreach (var cmd in cmds)
+				{
+					if (!cmd.CanRun(player))
+					{
+						player.SendErrorMessage("你没有权限执行该指令。", Commands.Specifier);
+					}
+					else if (!cmd.AllowServer && !player.RealPlayer)
+					{
+						player.SendErrorMessage("你必须在游戏内执行该指令。");
+					}
+					else
+					{
+						cmd.Run(cmdText, silent, player, args);
+					}
 				}
 			}
-
-			return true;
 		}
 
 		public static bool HandleCommandIgnorePermission(TSPlayer player, string text)
