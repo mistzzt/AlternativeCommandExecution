@@ -40,7 +40,7 @@ namespace AlternativeCommandExecution
 
 			if (args.Text.Length > 500)
 			{
-				TShock.Utils.Kick(tsplr, "试图发送长聊天语句破坏服务器。", true);
+			    tsplr.Kick("试图发送长聊天语句破坏服务器。", true);
 				args.Handled = true;
 				return;
 			}
@@ -72,7 +72,6 @@ namespace AlternativeCommandExecution
 			}
 
 			ShortCommandUtil.HandleCommand(tsplr, text);
-
 			args.Handled = true;
 		}
 
