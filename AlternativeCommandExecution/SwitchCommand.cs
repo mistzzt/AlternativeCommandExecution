@@ -73,10 +73,20 @@ namespace AlternativeCommandExecution
 				{
 					if (!sc.IgnorePermission)
 					{
-						ShortCommand.ShortCommandUtil.HandleCommand(player, sc.Command);
+                        foreach (var command in sc.Command.Split(';'))
+                        {
+                            if(!string.IsNullOrWhiteSpace(command))
+                                ShortCommand.ShortCommandUtil.HandleCommand(player, command);
+                        }
 					}
-					else
-						ShortCommand.ShortCommandUtil.HandleCommandIgnorePermission(player, sc.Command);
+                    else
+                    {
+                        foreach (var command in sc.Command.Split(';'))
+                        {
+                            if (!string.IsNullOrWhiteSpace(command))
+                                ShortCommand.ShortCommandUtil.HandleCommandIgnorePermission(player, command);
+                        }
+                    }
 				}
 				catch (Exception e)
 				{
